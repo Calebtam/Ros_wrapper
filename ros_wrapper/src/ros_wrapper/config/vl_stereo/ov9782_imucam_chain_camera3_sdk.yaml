@@ -1,0 +1,45 @@
+%YAML:1.0
+cam0:
+# imu to cam0
+  T_cam_imu:
+    - [0.999786, 0.0158433, -0.0133301, -0.0108033]
+    - [-0.0157617, 0.999857, 0.00620258, -0.00367506]
+    - [0.0134264, -0.00599114, 0.999892, -0.019324]
+    - [0, 0, 0, 1]
+  cam_overlaps: [1]
+  camera_model: pinhole
+  distortion_coeffs: [0.078743450343608856, -0.014660945162177086, 0.00064975657733157277, -0.0018139801686629653]
+  distortion_model: equidistant
+  intrinsics: [460.19784545898438, 460.244140625, 621.52197265625, 335.90582275390625]
+  resolution: [1280, 800]
+  # rostopic: /camera/image
+  rostopic: /camera/ir_left_image
+  # rostopic: /camera/image_left
+  # timeshift transform cam0 to imu0: [s] (t_imu = t_cam + shift)
+  # timeshift_cam_imu: 0.058777453820573332
+  timeshift_cam_imu: 5.8195147841694920e-03
+cam1:
+# imu to cam1
+  T_cam_imu:
+    - [0.999976, 0.000616696, 0.00696859, -0.101267]
+    - [-0.000587003, 0.999991, -0.00426225, 0.00040515]
+    - [-0.00697115, 0.00425806, 0.999967, -0.0000260618]
+    - [0.0, 0.0, 0.0, 1.0]
+# cam1 to cam0
+  T_cn_cnm1:
+    - [0.999976, -0.000587003, -0.00697115, 0.101264]
+    - [0.000616696, 0.999991, 0.00425806, -0.000342584]
+    - [0.00696859, -0.00426225, 0.999967, 0.000733474]
+    - [0.0, 0.0, 0.0, 1.0]
+  cam_overlaps: [0]
+  camera_model: pinhole
+  distortion_coeffs: [0.074946872889995575, -0.0013342463644221425, -0.010131302289664745, 0.00074180105002596974]
+  distortion_model: equidistant
+  intrinsics: [456.05764770507812, 455.8380126953125, 633.3109130859375, 381.19512939453125]
+  resolution: [1280, 800]
+  # rostopic: /camera/image2
+  rostopic: /camera/ir_right_image
+  # rostopic: /camera/image_right
+  timeshift_cam_imu: 5.8195147841694920e-03
+
+
