@@ -186,7 +186,7 @@ using namespace ov_msckf;
         Eigen::Matrix4d T_CtoI = Eigen::Matrix4d::Identity();
         parser->parse_external("relative_config_imucam", "cam" + std::to_string(i), "T_imu_cam", T_CtoI);
 
-        // Load these into our state
+        // Load these into our state  q_ItoC, p_IinC
         Eigen::Matrix<double, 7, 1> cam_eigen;
         cam_eigen.block(0, 0, 4, 1) = ov_core::rot_2_quat(T_CtoI.block(0, 0, 3, 3).transpose());
         cam_eigen.block(4, 0, 3, 1) = -T_CtoI.block(0, 0, 3, 3).transpose() * T_CtoI.block(0, 3, 3, 1);
@@ -235,6 +235,7 @@ using namespace ov_msckf;
       std::exit(EXIT_FAILURE);
     }
     PRINT_DEBUG("  - calib_camimu_dt: %.4f\n", calib_camimu_dt);
+
     for (int n = 0; n < state_options.num_cameras; n++) {
       std::stringstream ss;
       ss << "cam_" << n << "_fisheye:" << (std::dynamic_pointer_cast<ov_core::CamEqui>(camera_intrinsics.at(n)) != nullptr) << std::endl;
@@ -251,6 +252,26 @@ using namespace ov_msckf;
       ss << "T_C" << n << "toI:" << std::endl << T_CtoI << std::endl << std::endl;
       PRINT_DEBUG(ss.str().c_str());
     }
+
+    // Extrinsics
+    Eigen::Matrix4d T_C0_C1 = Eigen::Matrix4d::Identity();
+    parser->parse_external("relative_config_imucam", "cam1", "T_cn_cnm1", T_C0_C1);
+
+    // Load these into our state  q_ItoC, p_IinC
+    Eigen::Matrix<double, 7, 1> qp_C0_C1;
+    qp_C0_C1.block(0, 0, 4, 1) = ov_core::rot_2_quat(T_C0_C1.block(0, 0, 3, 3));
+    qp_C0_C1.block(4, 0, 3, 1) = T_C0_C1.block(0, 3, 3, 1);
+    camera_extrinsics.insert({10, qp_C0_C1});
+    
+    // Eigen::Matrix3d x2T_F_x1 =  ov_core::skew_x(T_C0_C1.block(0, 3, 3, 1))  * T_C0_C1.block(0, 0, 3, 3);
+
+    // std::stringstream ss;
+    // Eigen::Matrix4d T_C1toC0 = Eigen::Matrix4d::Identity();
+    // T_C1toC0.block(0, 0, 3, 3) = ov_core::quat_2_Rot(camera_extrinsics.at(10).block(0, 0, 4, 1));
+    // T_C1toC0.block(0, 3, 3, 1) = camera_extrinsics.at(10).block(4, 0, 3, 1);
+    // ss << "T_C0_C1:" << std::endl << T_C1toC0 << std::endl << std::endl;
+    // // ss << "x2T_F_x1:" << std::endl << x2T_F_x1 << std::endl << std::endl;
+    // PRINT_DEBUG(ss.str().c_str());
   }
 
   // TRACKERS ===============================

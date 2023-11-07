@@ -314,6 +314,38 @@ void TrackKLT::feed_stereo(const CameraData &message, size_t msg_id_left, size_t
     return;
   }
 
+  //===================================================================================
+  cv::Mat kp_im_show1 = img_curr.at(cam_id_left);
+  cv::Mat kp_im_show2 = img_curr.at(cam_id_right);
+  cv::cvtColor(kp_im_show1, kp_im_show1, cv::COLOR_GRAY2BGR);
+  cv::cvtColor(kp_im_show2, kp_im_show2, cv::COLOR_GRAY2BGR);
+  // for (size_t i = 0; i < pts_left_old.size(); i++)
+  // { 
+  //     // for (size_t j = 0; j < ids1.size(); j++)
+  //     // { 
+  //         if(mask_ll[i])
+  //         {
+  //             cv::circle(kp_im_show1, pts_left_new.at(i).pt, 3, cv::Scalar(0, 0, 255), cv::FILLED); //BGR
+  //             cv::line(kp_im_show1, pts_left_new.at(i).pt, pts_left_old.at(i).pt, cv::Scalar(0, 255, 0), 1);
+  //         }
+  //     // }
+  // }
+  // imshow("Left Frame Track ",kp_im_show1); 
+  // for (size_t i = 0; i < pts_right_old.size(); i++)
+  // { 
+  //     // for (size_t j = 0; j < ids1.size(); j++)
+  //     // { 
+  //         if(mask_rr[i])
+  //         {
+  //             cv::circle(kp_im_show2, pts_right_new.at(i).pt, 3, cv::Scalar(0, 0, 255), cv::FILLED); //BGR
+  //             cv::line(kp_im_show2, pts_right_new.at(i).pt, pts_right_old.at(i).pt, cv::Scalar(0, 255, 0), 1);
+  //         }
+  //     // }
+  // }
+  // imshow("Right Frame Track ",kp_im_show2); 
+  //===================================================================================
+
+
   // Get our "good tracks"
   std::vector<cv::KeyPoint> good_left, good_right;
   std::vector<size_t> good_ids_left, good_ids_right;
@@ -345,10 +377,18 @@ void TrackKLT::feed_stereo(const CameraData &message, size_t msg_id_left, size_t
       good_right.push_back(pts_right_new.at(index_right));
       good_ids_left.push_back(ids_left_old.at(i));
       good_ids_right.push_back(ids_right_old.at(index_right));
+
+      cv::circle(kp_im_show1, pts_left_new.at(i).pt, 3, cv::Scalar(0, 255, 0), cv::FILLED); //BGR
+      // cv::line(kp_im_show1, pts_left_new.at(i).pt, pts_right_new.at(index_right).pt, cv::Scalar(127, 127, 0), 1);
+      cv::line(kp_im_show1, pts_left_new.at(i).pt, pts_left_old.at(i).pt, cv::Scalar(255, 0, 0), 1);
+
       // PRINT_DEBUG("adding to stereo - %u , %u\n", ids_left_old.at(i), ids_right_old.at(index_right));
     } else if (mask_ll[i]) {
       good_left.push_back(pts_left_new.at(i));
       good_ids_left.push_back(ids_left_old.at(i));
+
+      cv::circle(kp_im_show1, pts_left_new.at(i).pt, 3, cv::Scalar(0, 0, 255), cv::FILLED); //BGR
+      cv::line(kp_im_show1, pts_left_new.at(i).pt, pts_left_old.at(i).pt, cv::Scalar(255, 0, 0), 1);
       // PRINT_DEBUG("adding to left - %u \n",ids_left_old.at(i));
     }
   }
@@ -365,9 +405,16 @@ void TrackKLT::feed_stereo(const CameraData &message, size_t msg_id_left, size_t
     if (mask_rr[i] && !added_already) {
       good_right.push_back(pts_right_new.at(i));
       good_ids_right.push_back(ids_right_old.at(i));
+
+      cv::circle(kp_im_show2, pts_right_new.at(i).pt, 3, cv::Scalar(0, 0, 255), cv::FILLED); //BGR
+      cv::line(kp_im_show2, pts_right_new.at(i).pt, pts_right_old.at(i).pt, cv::Scalar(255, 0, 0), 1);
+
       // PRINT_DEBUG("adding to right - %u \n", ids_right_old.at(i));
     }
   }
+
+  imshow("Left Frame Track ",kp_im_show1); 
+  imshow("Right Frame Track ",kp_im_show2); 
 
   // Update our feature database, with theses new observations
   for (size_t i = 0; i < good_left.size(); i++) {
@@ -734,6 +781,19 @@ void TrackKLT::perform_detection_stereo(const std::vector<cv::Mat> &img0pyr, con
           continue;
         }
 
+        // if (mask[i] == 1)
+        // {
+        //   cv::Vec3d pt0(pts0_new[i].x,
+        //       pts0_new[i].y, 1.0);
+        //   cv::Vec3d pt1(pts1_new[i].x,
+        //       pts1_new[i].y, 1.0);
+        //   cv::Vec3d epipolar_line = E * pt0;
+        //   double error = fabs((pt1.t() * epipolar_line)[0]) / sqrt(
+        //       epipolar_line[0]*epipolar_line[0]+
+        //       epipolar_line[1]*epipolar_line[1]);
+        //   if (error > processor_config.stereo_threshold*norm_pixel_unit)
+        //     inlier_markers[i] = 0;
+        // }  
         // Check to see if it there is already a feature in the right image at this location
         //  1) If this is not already in the right image, then we should treat it as a stereo
         //  2) Otherwise we will treat this as just a monocular track of the feature
@@ -751,8 +811,8 @@ void TrackKLT::perform_detection_stereo(const std::vector<cv::Mat> &img0pyr, con
           ids0.push_back(temp);
           ids1.push_back(temp);
 
-          cv::circle(kp_im_show1, kpts0_new.at(i).pt, 3, cv::Scalar(0, 0, 255), cv::FILLED); //BGR
-          cv::line(kp_im_show1, kpts0_new.at(i).pt, kpts1_new.at(i).pt, cv::Scalar(0, 255, 0), 1);
+          cv::circle(kp_im_show1, kpts1_new.at(i).pt, 3, cv::Scalar(0, 255, 0), cv::FILLED); //BGR
+          cv::line(kp_im_show1, kpts1_new.at(i).pt, kpts0_new.at(i).pt, cv::Scalar(127, 127, 0), 1);
 
         } else {
           // update the uv coordinates
@@ -762,7 +822,7 @@ void TrackKLT::perform_detection_stereo(const std::vector<cv::Mat> &img0pyr, con
           // move id forward and append this new point
           size_t temp = ++currid;
           ids0.push_back(temp);
-          cv::circle(kp_im_show1, kpts0_new.at(i).pt, 3, cv::Scalar(255, 0, 0), cv::FILLED); //BGR
+          // cv::circle(kp_im_show1, kpts0_new.at(i).pt, 3, cv::Scalar(255, 0, 0), cv::FILLED); //BGR
         }
       }
 
@@ -893,16 +953,16 @@ void TrackKLT::perform_detection_stereo(const std::vector<cv::Mat> &img0pyr, con
       ids1.push_back(temp);
       grid_2d_close1.at<uint8_t>(y_grid, x_grid) = 255;
     }
-    cv::Mat kp_im_show2 = img_curr.at(cam_id_left);
-    cv::cvtColor(kp_im_show2, kp_im_show2, cv::COLOR_GRAY2BGR);
-    for (size_t i = 0; i < pts1.size(); i++)
-    {
-        // double len = std::min(1.0, 1.0 * current_frame_->features_left_[Cur_frame_matched_index[i]]->track_cnt / 7);
-        cv::circle(kp_im_show2, pts1.at(i).pt, 3, cv::Scalar(0, 0, 255), cv::FILLED); //BGR
-        // cv::line(kp_im_show2, Last_kps_pt.at(i), Current_kps_pt.at(i), cv::Scalar(0, 255, 0), 1);
-    }
-    imshow("Right Point",kp_im_show2);
-    std::cout << " Right Point " << std::endl;
+    // cv::Mat kp_im_show2 = img_curr.at(cam_id_left);
+    // cv::cvtColor(kp_im_show2, kp_im_show2, cv::COLOR_GRAY2BGR);
+    // for (size_t i = 0; i < pts1.size(); i++)
+    // {
+    //     // double len = std::min(1.0, 1.0 * current_frame_->features_left_[Cur_frame_matched_index[i]]->track_cnt / 7);
+    //     cv::circle(kp_im_show2, pts1.at(i).pt, 3, cv::Scalar(0, 0, 255), cv::FILLED); //BGR
+    //     // cv::line(kp_im_show2, Last_kps_pt.at(i), Current_kps_pt.at(i), cv::Scalar(0, 255, 0), 1);
+    // }
+    // imshow("Right Point",kp_im_show2);
+    // std::cout << " Right Point: " << pts1.size() << std::endl;
   }
 }
 

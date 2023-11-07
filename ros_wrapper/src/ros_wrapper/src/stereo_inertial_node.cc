@@ -153,7 +153,7 @@ int main(int argc, char **argv)
     // setup_ros_publishers(node_handler, image_transport);
 
     auto sync_thread = std::make_shared<thread>(&ImageGrabber::SyncWithImu, &igb);
-
+    std::cout << "start === " << std::endl;
     ros::spin();
 
     return 0;
@@ -313,8 +313,8 @@ void ImageGrabber::SyncWithImu()
             imgRightBuf.pop();
             this->mBufMutexRight.unlock();
 
-            cv::imshow("imLeft", imLeft);
-            cv::imshow("imRight", imRight);
+            // cv::imshow("imLeft", imLeft);
+            // cv::imshow("imRight", imRight);
             // cv::waitKey(0); 
 
             imWriter_.WriterImg(imLeft, imRight);
