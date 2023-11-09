@@ -1,0 +1,8 @@
+prefix=/home/tam/wk/ros_wrapper/devel
+
+Name: ros_wrapper
+Description: Description of ros_wrapper
+Version: 0.0.1
+Cflags: 
+Libs: -L${prefix}/lib -l{PROJECT_NAME}
+Requires: roscpp rospy std_msgs cv_bridge image_transport tf sensor_msgs message_runtime

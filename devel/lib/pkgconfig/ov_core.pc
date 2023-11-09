@@ -1,0 +1,8 @@
+prefix=/home/tam/wk/ros_wrapper/devel
+
+Name: ov_core
+Description: Description of ov_core
+Version: 2.6.3
+Cflags: -I/home/tam/wk/ros_wrapper/src/ov_core/src/
+Libs: -L${prefix}/lib -lov_core_lib
+Requires: roscpp rosbag sensor_msgs cv_bridge

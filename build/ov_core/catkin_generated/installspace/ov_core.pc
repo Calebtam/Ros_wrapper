@@ -1,0 +1,8 @@
+prefix=/home/tam/wk/ros_wrapper/install
+
+Name: ov_core
+Description: Description of ov_core
+Version: 2.6.3
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib -lov_core_lib
+Requires: roscpp rosbag sensor_msgs cv_bridge
