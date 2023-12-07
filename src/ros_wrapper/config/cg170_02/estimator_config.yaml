@@ -56,11 +56,13 @@ init_dyn_inflation_bg: 10 # what to inflate the recovered bias_g covariance by
 init_dyn_inflation_ba: 100 # what to inflate the recovered bias_a covariance by
 init_dyn_min_rec_cond: 1e-12 # reciprocal condition number thresh for info inversion
 
-init_dyn_bias_g: [ -2.3364037860050639e-03, -9.3978715710932234e-03, 2.8861914952552584e-03] # initial gyroscope bias guess
-init_dyn_bias_a: [ -1.2423474693631309e-02, -3.3531070329121657e-02, 1.1749425586686568e-01] # initial accelerometer bias guess
+init_dyn_bias_g: [ 2.5960076133620891e-02, -6.0255819159676658e-03, 2.8270374081276396e-02] # initial gyroscope bias guess
+init_dyn_bias_a: [ 9.2842050997360273e-02, -4.5185882030140290e-02, 2.5572354904235872e-02] # initial accelerometer bias guess
 
 # ==================================================================
 # ==================================================================
+record_feature_information: false # if we want to record feature number
+record_feature_filepath: "/home/yunye/Desktop/open_vins/build/feature_log.txt"
 
 record_timing_information: false # if we want to record timing information of the method
 record_timing_filepath: "/tmp/traj_timing.txt" # https://docs.openvins.com/eval-timing.html#eval-ov-timing-flame
@@ -79,10 +81,11 @@ filepath_gt: "/tmp/ov_groundtruth.txt"
 # we have a KLT and descriptor based (KLT is better implemented...)
 use_klt: true # if true we will use KLT, otherwise use a ORB descriptor + robust matching
 num_pts: 200 # number of points (per camera) we will extract and try to track
-fast_threshold: 15 # threshold for fast extraction (warning: lower threshs can be expensive)
+fast_threshold: 20 # threshold for fast extraction (warning: lower threshs can be expensive)
 grid_x: 6 # extraction sub-grid count for horizontal direction (uniform tracking)
 grid_y: 6 # extraction sub-grid count for vertical direction (uniform tracking)
-min_px_dist: 25 # distance between features (features near each other provide less information)
+# 25(default) 40(20231116)
+min_px_dist: 40 # distance between features (features near each other provide less information)
 knn_ratio: 0.90 # descriptor knn threshold for the top two descriptor matches
 track_frequency: 21.0 # frequency we will perform feature tracking at (in frames per second / hertz)
 downsample_cameras: false # will downsample image in half if true
@@ -127,14 +130,33 @@ bag_durr: -1
 # ==================================================================
 # fusion params
 # ==================================================================
-# path_bag: /home/tam/DataSet/20231113_vl170_01/1113_01_1699826593_six.bag
-# path_bag: /home/tam/DataSet/20231113_vl170_01/1113_01_1699826593_fifth_4_25_25.bag
-path_bag: /home/tam/DataSet/20231109_vl170_01_BQC/1109_1699468549.bag 
+
+# path_bag for yunye
+# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231103_VL_4floor_Data/green_work_1698965105.bag
+# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231107_vl170_yt_01_19floor_data/green_work_1698394839.bag
+# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231107_vl170_yt_01_19floor_data/green_work_1698394941.bag
+# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231107_vl170_yt_01_4floor_data/green_work_1699320067.bag
+# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231107_vl170_yt_01_4floor_data/1108_record_1699426116.bag
+# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231108_vl170_yt_01_4floor_data/1108_1699404168.bag
+# 80s
+# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231109_vl170_01_BQC_双目/1109_2_1699477787.bag
+# 12s
+# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231109_vl170_01_BQC_双目/1109_2_1699479305.bag
+# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231109_vl170_01_BQC_回环/1109_1699468549_1.bag
+# first 44s; second 1370
+# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231109_vl170_01_BQC_回环/1109_1699468549.bag
+# 45s
+# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231113_vl170_01_BQC_双目/1113_01_1699826593_fifth_4_25_25.bag
+# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231115_cg170_01_3floor/green_work_1700010979.bag
+# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231116_cg170_01_BQC/1116_01_1699345333-fourth.bag
+# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231116_cg170_01_BQC/1116_01_1700094573-third.bag
+# 100s
+path_bag: /home/tam/DataSet/20231130_CG170_02_4floor/1128_record_1701133605.bag
+# 1128_record_1701133605.bag  #1128_record_1701132880.bag
 
 rtk_topic: /rtk_fix
 odom_topic: /wheel_odom
 #rtk_topic: /fix
-
 #noise param for fusion
 #position noise, 1e-4 for RTK status=4, 1e-2 for RTK status=2
 #when status = 2, [0.17, 0.17, 0.68], status = 4, [0.02, 0.02,0.09]
@@ -152,20 +174,27 @@ fusion_type: 0
 # sensor_frequency
 rtk_frequency: 10
 # vio pose frequency
-camera_frequency: 10
+camera_frequency: 20
 
 # timeshift transform rtk measurement at time t_rtk to imu0 time system t_imu: [s] (t_imu = t_rtk + shift)
 timeshift_rtk_imu: 0.0
 
 # rtk to imu(from calc)
-p_imu_rtk: [-0.0822939, 0.199551, -0.333923]   # [0.1059, 0.2789, 0.2900] [0.1051, 0.2519, 0.2885]
+p_imu_rtk: [0.0399348, 0.211008, 0.342694]   # [0.1059, 0.2789, 0.2900] [0.1051, 0.2519, 0.2885]
 
 # cam to robot: Trc, original calibration result
 # z: 0.2662
+
+# T_robot_cam:
+  # - [-0.064968, -0.417397, 0.906399, 0.424775]
+  # - [-0.997858, 0.020264, -0.062192, 0.031332]
+  # - [0.007592, -0.908498, -0.417819, 0.255]
+  # - [0, 0, 0, 1]
+
 T_robot_cam:
-  - [-0.064968, -0.417397, 0.906399, 0.424775]
-  - [-0.997858, 0.020264, -0.062192, 0.031332]
-  - [0.007592, -0.908498, -0.417819, 0.255]
+  - [0.016954, -0.466968, 0.884112, 0.438583]
+  - [-0.999855, -0.006797, 0.015583, 0.073411]
+  - [-0.001267, -0.884248, -0.467016, 0.2662]
   - [0, 0, 0, 1]
 
 # rtk to robot(from measure)
@@ -183,7 +212,7 @@ state_transfer_rate: 1.5
 # image time delay
 image_time_delay: 0.005
 
-# devergency threshold
+# divergency threshold
 divergency_mean: 0.2
 divergency_std: 0.1
 
@@ -193,12 +222,7 @@ record_rosbag_path: "/home/yunye/Documents/EN2301/20231017_双目定位适配/20
 rosbag_name: "1108_record"
 
 # trajectory display using Robot, must be false if used independent imu propagation
-display_robot_flag: false
+display_robot_flag: true
 
 # output pose, fusion pose: false, imu pose: true
 output_imu_pose_flag: false
-
-camrostopic: /camera/image_raw
-cam0rostopic: /camera/image_left_raw
-cam1rostopic: /camera/image_right_raw
-imu0rostopic: /camera/imu

@@ -1,2 +1,0 @@
-ov_core:ros_wrapper
--DCATKIN_DEVEL_PREFIX=/home/tam/wk/ros_wrapper/devel -DCMAKE_INSTALL_PREFIX=/home/tam/wk/ros_wrapper/install -G Unix Makefiles

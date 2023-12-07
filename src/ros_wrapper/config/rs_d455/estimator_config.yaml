@@ -79,9 +79,9 @@ filepath_gt: "/tmp/ov_groundtruth.txt"
 # we have a KLT and descriptor based (KLT is better implemented...)
 use_klt: true # if true we will use KLT, otherwise use a ORB descriptor + robust matching
 num_pts: 200 # number of points (per camera) we will extract and try to track
-fast_threshold: 15 # threshold for fast extraction (warning: lower threshs can be expensive)
-grid_x: 5 # extraction sub-grid count for horizontal direction (uniform tracking)
-grid_y: 5 # extraction sub-grid count for vertical direction (uniform tracking)
+fast_threshold: 10 # threshold for fast extraction (warning: lower threshs can be expensive)
+grid_x: 6 # extraction sub-grid count for horizontal direction (uniform tracking)
+grid_y: 6 # extraction sub-grid count for vertical direction (uniform tracking)
 min_px_dist: 15 # distance between features (features near each other provide less information)
 knn_ratio: 0.70 # descriptor knn threshold for the top two descriptor matches
 track_frequency: 31.0 # frequency we will perform feature tracking at (in frames per second / hertz)

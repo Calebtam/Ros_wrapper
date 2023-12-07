@@ -139,6 +139,7 @@ protected:
    * @param message Contains our timestamp, images, and camera ids
    * @param msg_id the camera index in message data vector
    */
+  void feed_monocular(const CameraData &message, size_t msg_id);
 
   /**
    * @brief Process new stereo pair of images
@@ -147,6 +148,7 @@ protected:
    * @param msg_id_right second image index in message data vector
    */
   void feed_stereo(const CameraData &message, size_t msg_id_left, size_t msg_id_right);
+  void feed_stereo(const CameraData &message, size_t msg_id_left, size_t msg_id_right, int a);
   /**
    * @brief Detects new features in the current image
    * @param img0pyr image we will detect features on (first level of pyramid)
@@ -158,6 +160,8 @@ protected:
    * Will try to always have the "max_features" being tracked through KLT at each timestep.
    * Passed images should already be grayscaled.
    */
+  void perform_detection_monocular(const std::vector<cv::Mat> &img0pyr, const cv::Mat &mask0, std::vector<cv::KeyPoint> &pts0,
+                                   std::vector<size_t> &ids0);
 
   /**
    * @brief Detects new features in the current stereo pair
@@ -180,6 +184,12 @@ protected:
   void perform_detection_stereo(const std::vector<cv::Mat> &img0pyr, const std::vector<cv::Mat> &img1pyr, const cv::Mat &mask0,
                                 const cv::Mat &mask1, size_t cam_id_left, size_t cam_id_right, std::vector<cv::KeyPoint> &pts0,
                                 std::vector<cv::KeyPoint> &pts1, std::vector<size_t> &ids0, std::vector<size_t> &ids1);
+  void perform_detection_stereo(const std::vector<cv::Mat> &img0pyr, const std::vector<cv::Mat> &img1pyr, const cv::Mat &mask0,
+                                const cv::Mat &mask1, size_t cam_id_left, size_t cam_id_right, std::vector<cv::KeyPoint> &pts0,
+                                std::vector<cv::KeyPoint> &pts1, std::vector<size_t> &ids0, std::vector<size_t> &ids1, int & data);
+  void perform_detection_stereo(const std::vector<cv::Mat> &img0pyr, const std::vector<cv::Mat> &img1pyr, const cv::Mat &mask0,
+                                const cv::Mat &mask1, size_t cam_id_left, size_t cam_id_right, std::vector<cv::KeyPoint> &pts0,
+                                std::vector<cv::KeyPoint> &pts1, std::vector<size_t> &ids0, std::vector<size_t> &ids1, float a);
   /**
    * @brief KLT track between two images, and do RANSAC afterwards
    * @param img0pyr starting image pyramid
@@ -219,7 +229,7 @@ protected:
   Eigen::Matrix3d F12, E12;
   Eigen::Matrix3d K_C1, K_C2;   // F Matrix
   float fontsize = 1;
-};  
+};
 
 } // namespace ov_core
 

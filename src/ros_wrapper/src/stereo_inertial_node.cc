@@ -23,12 +23,12 @@ using namespace std;
 using namespace ov_core;
 // using namespace ov_type;
 // using namespace ov_msckf;
-
+class ImgWriter;
 // std::shared_ptr<ov_msckf::VioManager> sys;
 // std::shared_ptr<ov_msckf::ROS1Visualizer> viz;
 std::shared_ptr<ov_core::TrackBase> trackFEATS;
 std::shared_ptr<ov_msckf::VioManagerOptions> params;
-
+std::shared_ptr<ImgWriter> imWriter_;
 class ImgWriter
 {
 public:
@@ -70,7 +70,28 @@ public:
     // ORB_SLAM3::System* mpSLAM;
     ImuGrabber *mpImuGb;
 };
+cv::Mat logTransform2(cv::Mat srcImage, float c = 2)
+{
+    if (srcImage.empty())
+        cout << "No data" << endl;
 
+    cv::Mat gray_float(srcImage.size(), CV_32FC1);  
+    srcImage.convertTo(gray_float, CV_32FC1);
+    cv::Mat resultImage = cv::Mat::zeros(srcImage.size(), srcImage.type());
+    cv::Mat log_image_32bit = cv::Mat::zeros(srcImage.size(), CV_32FC1);
+    float a = log(2.71828 + 5);
+    double gray = 0;
+    for (int i = 0; i < srcImage.rows; i++){
+        for (int j = 0; j < srcImage.cols; j++){
+            gray = (double)gray_float.at<float>(i, j) / 255;
+            gray = c * log1p((double)(gray)) / a ;
+            log_image_32bit.at<float>(i, j) = cv::saturate_cast<float>(gray*255);
+        }
+    }
+    cv::normalize(log_image_32bit, resultImage, 0, 255, cv::NORM_MINMAX);
+    cv::convertScaleAbs(resultImage, resultImage);
+    return resultImage;
+}
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "Stereo_Inertial");
@@ -144,6 +165,8 @@ int main(int argc, char **argv)
         state->_cam_intrinsics.at(i)->set_fej(params->camera_intrinsics.at(i)->get_value());
         state->_calib_IMUtoCAM.at(i)->set_value(params->camera_extrinsics.at(i));
         state->_calib_IMUtoCAM.at(i)->set_fej(params->camera_extrinsics.at(i));
+        // std::cout << i << "cam: " << std::endl << state->_cam_intrinsics_cameras[i]->get_D() << std::endl;
+        // std::cout << state->_cam_intrinsics_cameras[i]->get_K() << std::endl;
     }
     // state->_calib_IMUtoCAM.at(10)->set_fej(params->camera_extrinsics.at(10));
     // 内参 
@@ -257,6 +280,9 @@ void ImuGrabber::GrabImu(const sensor_msgs::ImuConstPtr &imu_msg)
 void ImageGrabber::SyncWithImu()
 {
     const double maxTimeDiff = 0.01;
+    // imWriter_ = std::make_shared<ImgWriter>("/home/tam/DataSet/img");
+    imWriter_ = std::shared_ptr<ImgWriter>(new ImgWriter("/home/tam/DataSet/img"));
+
     while(1)
     {
         cv::Mat imLeft, imRight;
@@ -300,13 +326,13 @@ void ImageGrabber::SyncWithImu()
             this->mBufMutexLeft.lock();
             imLeft = GetImage(imgLeftBuf.front());
             ros::Time msg_time = imgLeftBuf.front()->header.stamp;
-            message.images.push_back(imLeft);
+            message.images.push_back(logTransform2(imLeft));
             imgLeftBuf.pop();
             this->mBufMutexLeft.unlock();
 
             this->mBufMutexRight.lock();
             imRight = GetImage(imgRightBuf.front());
-            message.images.push_back(imRight);
+            message.images.push_back(logTransform2(imRight));
             imgRightBuf.pop();
             this->mBufMutexRight.unlock();
 
@@ -341,6 +367,8 @@ void ImageGrabber::SyncWithImu()
             message.sensor_ids.push_back(1);
             message.images.push_back(im(cv::Rect(0, 0, im.cols, im.rows/2)));
             message.images.push_back(im(cv::Rect(0, im.rows/2, im.cols, im.rows/2)));
+
+            // imWriter_->WriterImg(im(cv::Rect(0, 0, im.cols, im.rows/2)), im(cv::Rect(0, im.rows/2, im.cols, im.rows/2)));
 
             trackFEATS->feed_new_camera(message);
 

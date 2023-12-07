@@ -10,16 +10,16 @@ use_stereo: true # if we have more than 1 camera, if we should try to track ster
 max_cameras: 2 # how many cameras we have 1 = mono, 2 = stereo, >2 = binocular (all mono tracking)
 
 calib_cam_extrinsics: true # if the transform between camera and IMU should be optimized R_ItoC, p_CinI
-calib_cam_intrinsics: false # if camera intrinsics should be optimized (focal, center, distortion)
+calib_cam_intrinsics: true # if camera intrinsics should be optimized (focal, center, distortion)
 calib_cam_timeoffset: true # if timeoffset between camera and IMU should be optimized
 
-max_clones: 7 # how many clones in the sliding window
-max_slam: 45 # number of features in our state vector
+max_clones: 11 # how many clones in the sliding window
+max_slam: 50 # number of features in our state vector
 max_slam_in_update: 25 # update can be split into sequential updates of batches, how many in a batch
-max_msckf_in_update: 35 # how many MSCKF features to use in the update
+max_msckf_in_update: 40 # how many MSCKF features to use in the update
 dt_slam_delay: 1 # delay before initializing (helps with stability from bad initialization...)
 
-gravity_mag: 9.80665 # magnitude of gravity in this location
+gravity_mag: 9.81 # magnitude of gravity in this location
 
 feat_rep_msckf: "GLOBAL_3D"
 feat_rep_slam: "ANCHORED_MSCKF_INVERSE_DEPTH"
@@ -38,9 +38,9 @@ zupt_only_at_beginning: false
 # ==================================================================
 
 init_window_time: 2.0 # how many seconds to collect initialization information
-init_imu_thresh: 0.5 # threshold for variance of the accelerometer to detect a "jerk" in motion
+init_imu_thresh: 1.5 # threshold for variance of the accelerometer to detect a "jerk" in motion
 init_max_disparity: 10.0 # max disparity to consider the platform stationary (dependent on resolution)
-init_max_features: 50 # how many features to track during initialization (saves on computation)
+init_max_features: 75 # how many features to track during initialization (saves on computation)
 
 init_dyn_use: false # if dynamic initialization should be used
 init_dyn_mle_opt_calib: false # if we should optimize calibration during intialization (not recommended)
@@ -56,8 +56,8 @@ init_dyn_inflation_bg: 10 # what to inflate the recovered bias_g covariance by
 init_dyn_inflation_ba: 100 # what to inflate the recovered bias_a covariance by
 init_dyn_min_rec_cond: 1e-12 # reciprocal condition number thresh for info inversion
 
-init_dyn_bias_g: [ -2.3364037860050639e-03, -9.3978715710932234e-03, 2.8861914952552584e-03] # initial gyroscope bias guess
-init_dyn_bias_a: [ -1.2423474693631309e-02, -3.3531070329121657e-02, 1.1749425586686568e-01] # initial accelerometer bias guess
+init_dyn_bias_g: [ 0.0, 0.0, 0.0 ] # initial gyroscope bias guess
+init_dyn_bias_a: [ 0.0, 0.0, 0.0 ] # initial accelerometer bias guess
 
 # ==================================================================
 # ==================================================================
@@ -79,15 +79,15 @@ filepath_gt: "/tmp/ov_groundtruth.txt"
 # we have a KLT and descriptor based (KLT is better implemented...)
 use_klt: true # if true we will use KLT, otherwise use a ORB descriptor + robust matching
 num_pts: 200 # number of points (per camera) we will extract and try to track
-fast_threshold: 15 # threshold for fast extraction (warning: lower threshs can be expensive)
-grid_x: 6 # extraction sub-grid count for horizontal direction (uniform tracking)
-grid_y: 6 # extraction sub-grid count for vertical direction (uniform tracking)
-min_px_dist: 25 # distance between features (features near each other provide less information)
-knn_ratio: 0.90 # descriptor knn threshold for the top two descriptor matches
+fast_threshold: 20 # threshold for fast extraction (warning: lower threshs can be expensive)
+grid_x: 5 # extraction sub-grid count for horizontal direction (uniform tracking)
+grid_y: 5 # extraction sub-grid count for vertical direction (uniform tracking)
+min_px_dist: 10 # distance between features (features near each other provide less information)
+knn_ratio: 0.70 # descriptor knn threshold for the top two descriptor matches
 track_frequency: 21.0 # frequency we will perform feature tracking at (in frames per second / hertz)
 downsample_cameras: false # will downsample image in half if true
 num_opencv_threads: 4 # -1: auto, 0-1: serial, >1: number of threads
-histogram_method: "NONE" # NONE, HISTOGRAM, CLAHE
+histogram_method: "HISTOGRAM" # NONE, HISTOGRAM, CLAHE
 
 # aruco tag tracker for the system
 # DICT_6X6_1000 from https://chev.me/arucogen/
@@ -108,97 +108,15 @@ up_aruco_chi2_multipler: 1
 
 # masks for our images
 use_mask: false
-# mask0: "rect.png" #relative to current file frontMask_100.png
-mask0: "rect.png" #relative to current file
-mask1: "rect.png" #relative to current file
-
 
 # imu and camera spacial-temporal
 # imu config should also have the correct noise values
-use_accle_gyro: false
-relative_config_imu: "icm40608_imu_chain.yaml"
-#relative_config_imucam: "ov9782_imucam_chain_camera1.yaml"
-#relative_config_imucam: "ov9782_imucam_chain_camera2.yaml"
-relative_config_imucam: "ov9782_imucam_chain_camera3.yaml"
+relative_config_imu: "kalibr_imu_chain.yaml"
+relative_config_imucam: "kalibr_imucam_chain.yaml"
 
-bag_start: 0
-bag_durr: -1
-
-# ==================================================================
-# fusion params
-# ==================================================================
-# path_bag: /home/tam/DataSet/20231113_vl170_01/1113_01_1699826593_six.bag
-# path_bag: /home/tam/DataSet/20231113_vl170_01/1113_01_1699826593_fifth_4_25_25.bag
-path_bag: /home/tam/DataSet/20231109_vl170_01_BQC/1109_1699468549.bag 
-
-rtk_topic: /rtk_fix
-odom_topic: /wheel_odom
-#rtk_topic: /fix
-
-#noise param for fusion
-#position noise, 1e-4 for RTK status=4, 1e-2 for RTK status=2
-#when status = 2, [0.17, 0.17, 0.68], status = 4, [0.02, 0.02,0.09]
-sigma_p: [0.02, 0.02,0.09]
-#velocity noise
-sigma_v: [0.02, 0.02,0.09]
-#roll and pitch noise
-sigma_rp: [0.1, 0.1]
-#yaw noise
-sigma_yaw: 1
-
-# fusion type: 0-fuse all, 1-fuse RTK only, 2-fuse VIO only. This is for debug
-fusion_type: 0
-
-# sensor_frequency
-rtk_frequency: 10
-# vio pose frequency
-camera_frequency: 10
-
-# timeshift transform rtk measurement at time t_rtk to imu0 time system t_imu: [s] (t_imu = t_rtk + shift)
-timeshift_rtk_imu: 0.0
-
-# rtk to imu(from calc)
-p_imu_rtk: [-0.0822939, 0.199551, -0.333923]   # [0.1059, 0.2789, 0.2900] [0.1051, 0.2519, 0.2885]
-
-# cam to robot: Trc, original calibration result
-# z: 0.2662
-T_robot_cam:
-  - [-0.064968, -0.417397, 0.906399, 0.424775]
-  - [-0.997858, 0.020264, -0.062192, 0.031332]
-  - [0.007592, -0.908498, -0.417819, 0.255]
-  - [0, 0, 0, 1]
-
-# rtk to robot(from measure)
-p_robot_rtk: [0.005, 0.113, 0.230] # [0.029, 0.121, 0.238]
-
-# At least distance for calculation of extrinsic transformation from imu world to enu
-initial_distance: 0.5
-
-# image display with the slam feature
-display_image: true
-
-# state transfer reflection rate
-state_transfer_rate: 1.5
-
-# image time delay
-image_time_delay: 0.005
-
-# devergency threshold
-divergency_mean: 0.2
-divergency_std: 0.1
-
-# data record
-record_rosbag: false
-record_rosbag_path: "/home/yunye/Documents/EN2301/20231017_双目定位适配/20231107_vl170_yt_01_4floor_data/"
-rosbag_name: "1108_record"
-
-# trajectory display using Robot, must be false if used independent imu propagation
-display_robot_flag: false
-
-# output pose, fusion pose: false, imu pose: true
-output_imu_pose_flag: false
 
 camrostopic: /camera/image_raw
-cam0rostopic: /camera/image_left_raw
-cam1rostopic: /camera/image_right_raw
-imu0rostopic: /camera/imu
+cam0rostopic: /cam0/image_raw
+cam1rostopic: /cam1/image_raw
+imu0rostopic: /imu0
+
