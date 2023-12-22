@@ -217,6 +217,7 @@ void TrackKLT::feed_stereo(const CameraData &message, size_t msg_id_left, size_t
   std::vector<size_t> good_ids_left, good_ids_right;
 
   int num_of_points = 0;
+  int nn_count = 0, ll_count = 0, rr_count = 0;
   // Loop through all left points
   for (size_t i = 0; i < pts_left_new.size(); i++) {
     // Ensure we do not have any bad KLT tracks (i.e., points are negative)
@@ -252,6 +253,7 @@ void TrackKLT::feed_stereo(const CameraData &message, size_t msg_id_left, size_t
       cv::circle(kp_im_show2, pts_right_new.at(index_right).pt, 5/1.5 * fontsize, cv::Scalar(0, 255, 0), cv::FILLED); //BGR
       cv::line(kp_im_show2, pts_left_new.at(i).pt, pts_right_new.at(index_right).pt, cv::Scalar(0, 255, 0), 2/1.5*fontsize);
       cv::line(kp_im_show2, pts_right_new.at(index_right).pt, pts_right_old.at(index_right).pt, cv::Scalar(0, 255, 255), 2/1.5*fontsize);
+      nn_count++;
       // PRINT_DEBUG("adding to stereo - %u , %u\n", ids_left_old.at(i), ids_right_old.at(index_right));
     } 
     else if (mask_ll[i]) 
@@ -260,14 +262,14 @@ void TrackKLT::feed_stereo(const CameraData &message, size_t msg_id_left, size_t
       good_ids_left.push_back(ids_left_old.at(i));
       cv::circle(kp_im_show1, pts_left_new.at(i).pt, 5/1.5 * fontsize, cv::Scalar(0, 255, 255), cv::FILLED); //BGR
       cv::line(kp_im_show1, pts_left_new.at(i).pt, pts_left_old.at(i).pt, cv::Scalar(0, 255, 255), 2/1.5*fontsize);
-
+      ll_count++;
       // PRINT_DEBUG("adding to left - %u \n",ids_left_old.at(i));
     } 
     if(!mask_ll[i])
     {
       std::stringstream buf;
       buf << ids_left_old[i];
-      cv::putText(kp_im_show1, buf.str(), cv::Point2f(pts_left_old.at(i).pt.x-20,pts_left_old.at(i).pt.y-10), cv::FONT_HERSHEY_SIMPLEX, 0.4*fontsize, cv::Scalar(0, 0, 255), 2/1.5*fontsize);
+      // cv::putText(kp_im_show1, buf.str(), cv::Point2f(pts_left_old.at(i).pt.x-20,pts_left_old.at(i).pt.y-10), cv::FONT_HERSHEY_SIMPLEX, 0.4*fontsize, cv::Scalar(0, 0, 255), 2/1.5*fontsize);
       cv::circle(kp_im_show1, pts_left_old.at(i).pt, 5/1.5 * fontsize, cv::Scalar(0, 0, 255), cv::FILLED); //BGR
       cv::line(kp_im_show1, pts_left_new.at(i).pt, pts_left_old.at(i).pt, cv::Scalar(0, 0, 255), 2/1.5*fontsize);
     }
@@ -275,7 +277,7 @@ void TrackKLT::feed_stereo(const CameraData &message, size_t msg_id_left, size_t
     {
       std::stringstream buf;
       buf << ids_right_old[index_right];
-      cv::putText(kp_im_show2, buf.str(), cv::Point2f(pts_right_old.at(index_right).pt.x-20,pts_right_old.at(index_right).pt.y-10), cv::FONT_HERSHEY_SIMPLEX, 0.6*fontsize, cv::Scalar(0, 0, 255), 2/1.5*fontsize);
+      // cv::putText(kp_im_show2, buf.str(), cv::Point2f(pts_right_old.at(index_right).pt.x-20,pts_right_old.at(index_right).pt.y-10), cv::FONT_HERSHEY_SIMPLEX, 0.6*fontsize, cv::Scalar(0, 0, 255), 2/1.5*fontsize);
       cv::circle(kp_im_show2, pts_right_old.at(index_right).pt, 5/1.5 * fontsize, cv::Scalar(0, 0, 255), cv::FILLED); //BGR
       cv::line(kp_im_show2, pts_right_new.at(index_right).pt, pts_right_old.at(index_right).pt, cv::Scalar(0, 0, 255), 2/1.5*fontsize);
     }
@@ -296,17 +298,22 @@ void TrackKLT::feed_stereo(const CameraData &message, size_t msg_id_left, size_t
       cv::circle(kp_im_show2, pts_right_new.at(i).pt, 5/1.5 * fontsize, cv::Scalar(0, 255, 255), cv::FILLED); //BGR
       cv::line(kp_im_show2, pts_right_new.at(i).pt, pts_right_old.at(i).pt, cv::Scalar(0, 255, 255), 2/1.5*fontsize);
       // PRINT_DEBUG("adding to right - %u \n", ids_right_old.at(i));
+      rr_count++;
     }
     if(!mask_rr[i])
     {
       std::stringstream buf;
       buf << ids_right_old[i];
-      cv::putText(kp_im_show1, buf.str(), cv::Point2f(pts_right_old.at(i).pt.x-20,pts_right_old.at(i).pt.y-10), cv::FONT_HERSHEY_SIMPLEX, 0.4*fontsize, cv::Scalar(0, 0, 255), 2/1.5*fontsize);
+      // cv::putText(kp_im_show1, buf.str(), cv::Point2f(pts_right_old.at(i).pt.x-20,pts_right_old.at(i).pt.y-10), cv::FONT_HERSHEY_SIMPLEX, 0.4*fontsize, cv::Scalar(0, 0, 255), 2/1.5*fontsize);
       cv::circle(kp_im_show1, pts_right_old.at(i).pt, 5/1.5 * fontsize, cv::Scalar(0, 0, 255), cv::FILLED); //BGR
     }
   }
   cv::resize(kp_im_show1,kp_im_show1,cv::Size(kp_im_show1.cols/fontsize,kp_im_show1.rows/fontsize));
   cv::resize(kp_im_show2,kp_im_show2,cv::Size(kp_im_show2.cols/fontsize,kp_im_show2.rows/fontsize));
+  cv::putText(kp_im_show1, "n/l/r:" + std::to_string((int)nn_count) + "/" + std::to_string((int)ll_count) + "/" + std::to_string((int)rr_count), 
+            cv::Point(10, 30), cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(193, 73, 255), 1.8);
+  cv::putText(kp_im_show2, "n/l/r:" + std::to_string((int)nn_count) + "/" + std::to_string((int)ll_count) + "/" + std::to_string((int)rr_count), 
+            cv::Point(10, 30), cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(193, 73, 255), 1.8);
   imshow("Left Frame Track ",kp_im_show1); 
   imshow("Right Frame Track ",kp_im_show2); 
   cv::waitKey (2);
@@ -381,11 +388,12 @@ void TrackKLT::perform_detection_stereo(const std::vector<cv::Mat> &img0pyr, con
   auto it1 = ids0.begin();
 
 
-  // cv::Mat kp_im_show1 = img_curr.at(cam_id_left);
-  // cv::cvtColor(kp_im_show1, kp_im_show1, cv::COLOR_GRAY2BGR);
-  // cv::Mat kp_im_show2 = img_curr.at(cam_id_right);
-  // cv::cvtColor(kp_im_show2, kp_im_show2, cv::COLOR_GRAY2BGR);
-
+  cv::Mat kp_im_show1 = img_curr.at(cam_id_left);
+  cv::cvtColor(kp_im_show1, kp_im_show1, cv::COLOR_GRAY2BGR);
+  cv::Mat kp_im_show2 = img_curr.at(cam_id_right);
+  cv::cvtColor(kp_im_show2, kp_im_show2, cv::COLOR_GRAY2BGR);
+  int stereo_count = 0, left_count = 0, right_count = 0;
+  int left_need = 0, right_need = 0;
   while (it0 != pts0.end()) {
     // Get current left keypoint, check that it is in bounds
     cv::KeyPoint kpt = *it0;
@@ -436,8 +444,8 @@ void TrackKLT::perform_detection_stereo(const std::vector<cv::Mat> &img0pyr, con
       cv::Point pt1(x - min_px_dist, y - min_px_dist);
       cv::Point pt2(x + min_px_dist, y + min_px_dist);
       cv::rectangle(mask0_updated, pt1, pt2, cv::Scalar(255), -1);
-      // cv::rectangle(kp_im_show1, pt1, pt2, cv::Scalar(75,75,75), cv::FILLED);
-      // cv::rectangle(kp_im_show1, pt1, pt2, cv::Scalar(255));
+      cv::rectangle(kp_im_show1, pt1, pt2, cv::Scalar(75,75,75), cv::FILLED);
+      cv::rectangle(kp_im_show1, pt1, pt2, cv::Scalar(255));
     }
     it0++;
     it1++;
@@ -446,7 +454,7 @@ void TrackKLT::perform_detection_stereo(const std::vector<cv::Mat> &img0pyr, con
   // First compute how many more features we need to extract from this image
   double min_feat_percent = 0.50;
   int num_featsneeded_0 = num_features - (int)pts0.size();
-
+  left_need = num_features - (int)pts1.size();
   // LEFT: if we need features we should extract them in the current frame
   // LEFT: we will also try to track them from this frame over to the right frame
   // LEFT: in the case that we have two features that are the same, then we should merge them
@@ -474,11 +482,13 @@ void TrackKLT::perform_detection_stereo(const std::vector<cv::Mat> &img0pyr, con
     }
     std::vector<cv::KeyPoint> pts0_ext;
     Grider_GRID::perform_griding(img0pyr.at(0), mask0_updated, valid_locs, pts0_ext, num_features, grid_x, grid_y, threshold, true);
+    left_count = pts0_ext.size();
 
     // Now, reject features that are close a current feature
     std::vector<cv::KeyPoint> kpts0_new;
     std::vector<cv::Point2f> pts0_new;
-    for (auto &kpt : pts0_ext) {
+    for (auto &kpt : pts0_ext) 
+    {
       // Check that it is in bounds
       int x_grid = (int)(kpt.pt.x / (float)min_px_dist);
       int y_grid = (int)(kpt.pt.y / (float)min_px_dist);
@@ -567,9 +577,9 @@ void TrackKLT::perform_detection_stereo(const std::vector<cv::Mat> &img0pyr, con
           // if(1)
           {  
             // cv::putText(kp_im_show1, buf.str(), cv::Point2f(pts0_new.at(i).x-20,pts0_new.at(i).y-10), cv::FONT_HERSHEY_SIMPLEX, 0.4*fontsize, cv::Scalar(0, 255, 255), 1*fontsize);
-            // cv::circle(kp_im_show1, pts0_new.at(i), 3 * fontsize, cv::Scalar(0, 255, 0), cv::FILLED); //BGR
-            // cv::line(kp_im_show1, pts1_new.at(i), pts0_new.at(i), cv::Scalar(0, 255, 255), 1*fontsize);
-            // cv::circle(kp_im_show2, pts1_new.at(i), 3 * fontsize, cv::Scalar(0, 255, 0), cv::FILLED); //BGR
+            cv::circle(kp_im_show1, pts0_new.at(i), 3 * fontsize, cv::Scalar(0, 255, 0), cv::FILLED); //BGR
+            cv::line(kp_im_show1, pts1_new.at(i), pts0_new.at(i), cv::Scalar(0, 255, 255), 1*fontsize);
+            cv::circle(kp_im_show2, pts1_new.at(i), 3 * fontsize, cv::Scalar(0, 255, 0), cv::FILLED); //BGR
 
             // append the new uv coordinate
             pts0.push_back(kpts0_new.at(i));
@@ -578,6 +588,7 @@ void TrackKLT::perform_detection_stereo(const std::vector<cv::Mat> &img0pyr, con
             size_t temp = ++currid;
             ids0.push_back(temp);
             ids1.push_back(temp);
+            stereo_count++;
           }
           else
           {
@@ -589,8 +600,8 @@ void TrackKLT::perform_detection_stereo(const std::vector<cv::Mat> &img0pyr, con
             size_t temp = ++currid;
             ids0.push_back(temp);
             // cv::putText(kp_im_show1, buf.str(), cv::Point2f(pts0_new.at(i).x-20,pts0_new.at(i).y-10), cv::FONT_HERSHEY_SIMPLEX, 0.4*fontsize, cv::Scalar(210, 210, 0), 1*fontsize);
-            // cv::circle(kp_im_show1, pts0_new.at(i), 3 * fontsize, cv::Scalar(210, 210, 0), cv::FILLED); //BGR
-            // // cv::line(kp_im_show1, kpts1_new.at(i).pt, kpts0_new.at(i).pt, cv::Scalar(128, 128, 0), 1*fontsize);
+            cv::circle(kp_im_show1, pts0_new.at(i), 3 * fontsize, cv::Scalar(210, 210, 0), cv::FILLED); //BGR
+            // cv::line(kp_im_show1, kpts1_new.at(i).pt, kpts0_new.at(i).pt, cv::Scalar(128, 128, 0), 1*fontsize);
             // cv::line(kp_im_show1, pts1_new.at(i), pts0_new.at(i), cv::Scalar(210, 210, 0), 1*fontsize);
           }
 
@@ -605,6 +616,8 @@ void TrackKLT::perform_detection_stereo(const std::vector<cv::Mat> &img0pyr, con
         }
       }
       // cv::resize(kp_im_show1,kp_im_show1,cv::Size(kp_im_show1.cols/fontsize,kp_im_show1.rows/fontsize));
+      // cv::putText(kp_im_show1, "Tra/Det/Req:" + std::to_string((int)count) + "/" + std::to_string((int)pts0_ext.size()) + "/" + std::to_string((int)num_needed), cv::Point(10, 30), cv::FONT_HERSHEY_COMPLEX_SMALL, 1,
+      //   cv::Scalar(0, 235, 0), 1.5);
       // imshow("Left Point Track ",kp_im_show1); 
       // cv::resize(kp_im_show2,kp_im_show2,cv::Size(kp_im_show2.cols/fontsize,kp_im_show2.rows/fontsize));
       // imshow("Right Point",kp_im_show2);
@@ -685,6 +698,7 @@ void TrackKLT::perform_detection_stereo(const std::vector<cv::Mat> &img0pyr, con
   // RIGHT: if we need features we should extract them in the current frame
   // RIGHT: note that we don't track them to the left as we already did left->right tracking above
   int num_featsneeded_1 = num_features - (int)pts1.size();
+  right_need = num_featsneeded_1;
   if (num_featsneeded_1 > std::min(20, (int)(min_feat_percent * num_features))) {
 
     // This is old extraction code that would extract from the whole image
@@ -709,7 +723,7 @@ void TrackKLT::perform_detection_stereo(const std::vector<cv::Mat> &img0pyr, con
     }
     std::vector<cv::KeyPoint> pts1_ext;
     Grider_GRID::perform_griding(img1pyr.at(0), mask1_updated, valid_locs, pts1_ext, num_features, grid_x, grid_y, threshold, true);
-
+    right_count = pts1_ext.size();
     // Now, reject features that are close a current feature
     for (auto &kpt : pts1_ext) {
       // Check that it is in bounds
@@ -727,6 +741,16 @@ void TrackKLT::perform_detection_stereo(const std::vector<cv::Mat> &img0pyr, con
       grid_2d_close1.at<uint8_t>(y_grid, x_grid) = 255;
     }
   }
+  // 193, 73, 255
+  cv::resize(kp_im_show1,kp_im_show1,cv::Size(kp_im_show1.cols/fontsize,kp_im_show1.rows/fontsize));
+  cv::putText(kp_im_show1, "Tra/Det/Req:" + std::to_string((int)stereo_count) + "/" + std::to_string((int)left_count) + "/" + std::to_string((int)left_need), 
+              cv::Point(10, 30), cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(193, 73, 255), 1.8);
+  imshow("Left Point Track ",kp_im_show1);
+
+  cv::resize(kp_im_show2,kp_im_show2,cv::Size(kp_im_show2.cols/fontsize,kp_im_show2.rows/fontsize));
+  cv::putText(kp_im_show2, "Tra/Det/Req:" + std::to_string((int)stereo_count) + "/" + std::to_string((int)right_count) + "/" + std::to_string((int)right_need), 
+            cv::Point(10, 30), cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(193, 73, 255), 1.8);
+  imshow("Right Point",kp_im_show2);
 }
 
 void TrackKLT::perform_matching(const std::vector<cv::Mat> &img0pyr, const std::vector<cv::Mat> &img1pyr, std::vector<cv::KeyPoint> &kpts0,
