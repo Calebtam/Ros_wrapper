@@ -11,7 +11,7 @@
 // #include "options/VioManagerOptions.h"
 // #include "ros/ROS1Visualizer.h"
 #include "options/VioManagerOptions.h"
-#include "State.h"
+#include "state/State.h"
 #include "track/TrackBase.h"
 #include "track/TrackKLT.h"
 #include "utils/opencv_yaml_parse.h"

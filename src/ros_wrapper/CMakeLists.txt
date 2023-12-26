@@ -44,8 +44,14 @@ include_directories(
    ${Pangolin_INCLUDE_DIRS}
    ${Sophus_INCLUDE_DIRS}
 )
+# ${PROJECT_SOURCE_DIR}  ==   /home/tam/wk/ros_wrapper/src/ros_wrapper
+# ${CMAKE_SOURCE_DIR}    ==   /home/tam/wk/ros_wrapper/src
 
-include_directories(${PROJECT_SOURCE_DIR}/../ov_core/src)
+include_directories(${CMAKE_SOURCE_DIR}/ov_core/src)
+include_directories(${CMAKE_SOURCE_DIR}/ov_msckf/src)
+
+# MESSAGE(STATUS "#### PROJECT_SOURCE_DIR  ${PROJECT_SOURCE_DIR}" )
+
 MESSAGE("include_directories:")
 MESSAGE(${PROJECT_SOURCE_DIR})
 # Build ROS nodes
@@ -92,10 +98,10 @@ set(LIBS
 add_executable (${PROJECT_NAME}_stereo
    src/stereo_node.cc
    src/later/common.cc
-   src/later/State.cpp
-   ../ov_core/src/track/TrackBase.cpp
-   ../ov_core/src/track/TrackKLT.cpp
-   ../ov_core/src/options/VioManagerOptions.cpp
+   ${CMAKE_SOURCE_DIR}/ov_msckf/src/state/State.cpp
+   ${CMAKE_SOURCE_DIR}/ov_core/src/track/TrackBase.cpp
+   ${CMAKE_SOURCE_DIR}/ov_core/src/track/TrackKLT.cpp
+   ${CMAKE_SOURCE_DIR}/ov_core/src/options/VioManagerOptions.cpp
 )
 target_link_libraries(${PROJECT_NAME}_stereo
    ${LIBS} ov_core_lib
@@ -105,10 +111,9 @@ target_link_libraries(${PROJECT_NAME}_stereo
 add_executable (${PROJECT_NAME}_inertial
    src/inertial_node.cc
    src/later/common.cc
-   src/later/State.cpp
-   ../ov_core/src/track/TrackBase.cpp
-   ../ov_core/src/track/TrackKLT.cpp
-   ../ov_core/src/options/VioManagerOptions.cpp
+   ${CMAKE_SOURCE_DIR}/ov_msckf/src/state/State.cpp
+   ${CMAKE_SOURCE_DIR}/ov_msckf/src/state/Propagator.cpp
+   ${CMAKE_SOURCE_DIR}/ov_msckf/src/state/StateHelper.cpp
 )
 target_link_libraries(${PROJECT_NAME}_inertial
    ${LIBS} ov_msckf_lib ov_core_lib
