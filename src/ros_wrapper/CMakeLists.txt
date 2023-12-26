@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(ros_wrapper)
+project(wrapper)
 
 # Change this to your installation of ORB-SLAM3. Default is ~/
 # set(ORB_SLAM3_DIR
