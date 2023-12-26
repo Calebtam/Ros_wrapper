@@ -88,19 +88,31 @@ set(LIBS
 # )
 
 
-# stereo-inertial node
-add_executable (${PROJECT_NAME}_stereo_inertial
-   src/stereo_inertial_node.cc
-   src/common.cc
-   src/State.cpp
+# 前端测试 node
+add_executable (${PROJECT_NAME}_stereo
+   src/stereo_node.cc
+   src/later/common.cc
+   src/later/State.cpp
    ../ov_core/src/track/TrackBase.cpp
    ../ov_core/src/track/TrackKLT.cpp
    ../ov_core/src/options/VioManagerOptions.cpp
 )
-target_link_libraries(${PROJECT_NAME}_stereo_inertial
+target_link_libraries(${PROJECT_NAME}_stereo
    ${LIBS} ov_core_lib
 )
 
+# IMU测试 node
+add_executable (${PROJECT_NAME}_inertial
+   src/inertial_node.cc
+   src/later/common.cc
+   src/later/State.cpp
+   ../ov_core/src/track/TrackBase.cpp
+   ../ov_core/src/track/TrackKLT.cpp
+   ../ov_core/src/options/VioManagerOptions.cpp
+)
+target_link_libraries(${PROJECT_NAME}_inertial
+   ${LIBS} ov_msckf_lib ov_core_lib
+)
 
 # # RGB-D node
 # add_executable (${PROJECT_NAME}_rgbd

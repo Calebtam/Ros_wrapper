@@ -1,0 +1,40 @@
+<launch>
+    <!-- change the bag -->
+    <arg name="bag_file" default="/home/tam/DataSet/20231116_CG170_baseball/1116_01_1699345333-fourth.bag"/>
+    <arg name="image_topic" default="/camera/image_sync_ir"/>
+    <arg name="uncompressed_topic" default="/camera/image_raw"/>
+
+    <!-- <node pkg="split" name="split.py" type="split.py"/> -->
+    <node pkg="wrapper" name="mysplit" type="mysplit.py" output="screen"/>
+
+    <!-- OpenVins -->
+    <node name="wrapper_inertial" pkg="wrapper" type="wrapper_inertial" output="screen">
+        <!-- Parameters for OpenVins -->
+        <param name="settings_file" type="string"   value="$(find wrapper)/config/cg170_03/estimator_config.yaml" />
+
+        <!-- Parameters for ROS -->
+        <param name="world_frame_id"    type="string"   value="world" />
+        <param name="cam_frame_id"      type="string"   value="camera" />
+        <param name="enable_pangolin"   type="bool"     value="true" />
+    </node>
+<!-- _inertial -->
+    <!-- Visualization - RViz-->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find wrapper)/config/orb_slam3_with_imu.rviz" output="screen" />
+    
+
+    <!-- Trajectory Server -->
+    <node pkg="hector_trajectory_server" type="hector_trajectory_server" name="trajectory_server_orb_slam3" output="screen" ns="orb_slam3_ros" >
+        <param name="/target_frame_name" value="/world" />
+        <param name="/source_frame_name" value="/camera" />
+        <param name="/trajectory_update_rate" value="20.0" />
+        <param name="/trajectory_publish_rate" value="20.0" />
+    </node>
+    
+    <!-- 注意这里bag文件的路径必须为绝对路径-->
+    <node pkg="rosbag" type="play" name="player"  args="$(arg bag_file)  -s 10" /> 
+    <node pkg="image_transport" type="republish" name="image_republisher" args="compressed in/compressed:=$(arg image_topic) out:=$(arg uncompressed_topic)"/>
+
+    <!-- <node pkg="image_transport" type="republish" name="image_republisher" args="compressed in:=$(arg image_topic) out:=$(arg uncompressed_topic)"/> -->
+    
+
+</launch>

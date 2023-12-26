@@ -5,7 +5,7 @@
     <arg name="uncompressed_topic" default="/camera/image_raw"/>
 
     <!-- OpenVins -->
-    <node name="wrapper_stereo_inertial" pkg="wrapper" type="wrapper_stereo_inertial" output="screen">
+    <node name="wrapper_stereo" pkg="wrapper" type="wrapper_stereo" output="screen">
         <!-- for EuRoC dataset -->
         <remap from="/camera/left/image_raw"    to="/cam0/image_raw"/>
         <remap from="/camera/right/image_raw"   to="/cam1/image_raw"/>
