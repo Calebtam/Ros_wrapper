@@ -48,50 +48,128 @@ public:
     std::shared_ptr<ov_msckf::Propagator> propagator_Ch0;
     std::shared_ptr<ov_msckf::Propagator> propagator_Icm;
 };
+class Noise : public NoiseManager
+{
+public:
 
-class ImuIntrics
+  virtual void print()  // 虚函数
+  {
+    PRINT_DEBUG("  - gyroscope_noise_density: %.6f\n", sigma_w);
+    PRINT_DEBUG("  - accelerometer_noise_density: %.5f\n", sigma_a);
+    PRINT_DEBUG("  - gyroscope_random_walk: %.7f\n", sigma_wb);
+    PRINT_DEBUG("  - accelerometer_random_walk: %.6f\n", sigma_ab);
+  }
+  virtual void SetTopic(string str) = 0;   // 纯虚函数
+  virtual string GetTopic()=0;
+  virtual void SetExtrinsic(Eigen::Matrix4d T) = 0;   // 纯虚函数 Extrinsic
+  virtual Eigen::Matrix4d GetExtrinsic()=0;
+};
+class ImuIntrics : public Noise
 {
 public:
     ImuIntrics(){};
     string topic;
-    ov_msckf::NoiseManager noise;
     Eigen::Matrix4d T_CtoI = Eigen::Matrix4d::Identity();
     void print() {
         std::cout << "ImuIntrics topic: " << topic << std::endl;
-        noise.print();
+        Noise::print();
         std::cout << "T_CtoI: " << std::endl << T_CtoI << std::endl;
     }
+    void SetTopic(string str){
+        topic = str;
+    }
+    string GetTopic(){
+        return topic;
+    }
+    void SetExtrinsic(Eigen::Matrix4d T){
+        T_CtoI = T;
+    }
+    Eigen::Matrix4d GetExtrinsic(){
+        return T_CtoI;
+    }
 };
-void load_noise(const std::shared_ptr<cv::FileStorage> config, const std::shared_ptr<ov_core::YamlParser> &parser, std::vector<ImuIntrics> &imu_noises) {
+
+void load_noise(const std::shared_ptr<cv::FileStorage> config, const std::shared_ptr<ov_core::YamlParser> &parser, std::vector<std::shared_ptr<Noise>> &imu_noises) {
 
     int num;
     parser->parse_config("imu_num", num); // might be redundant
     std::vector<std::string> imuTopic;
     for (int i = 0; i < num; i++) {
         imuTopic.push_back(std::string("relative_config_imu") + std::to_string(i));
-        string imu;
-        config->root()[imuTopic.at(i)]>>imu;
+        string imuType;
+        config->root()[imuTopic.at(i)]>>imuType;
         if (parser != nullptr) {
-            ImuIntrics imu;
-            parser->parse_external(imuTopic.at(i), "imu0", "rostopic", imu.topic);
-            parser->parse_external(imuTopic.at(i), "imu0", "gyroscope_noise_density", imu.noise.sigma_w);
-            parser->parse_external(imuTopic.at(i), "imu0", "gyroscope_random_walk", imu.noise.sigma_wb);
-            parser->parse_external(imuTopic.at(i), "imu0", "accelerometer_noise_density", imu.noise.sigma_a);
-            parser->parse_external(imuTopic.at(i), "imu0", "accelerometer_random_walk", imu.noise.sigma_ab);
-            parser->parse_external(imuTopic.at(i), "imu0", "T_imu_cam", imu.T_CtoI);
-            imu.noise.sigma_w_2 = std::pow(imu.noise.sigma_w, 2);
-            imu.noise.sigma_wb_2 = std::pow(imu.noise.sigma_wb, 2);
-            imu.noise.sigma_a_2 = std::pow(imu.noise.sigma_a, 2);
-            imu.noise.sigma_ab_2 = std::pow(imu.noise.sigma_ab, 2);
+            std::shared_ptr<Noise> imu = make_shared<ImuIntrics>();
+            parser->parse_external(imuTopic.at(i), "imu0", "gyroscope_noise_density", imu->sigma_w);
+            parser->parse_external(imuTopic.at(i), "imu0", "gyroscope_random_walk", imu->sigma_wb);
+            parser->parse_external(imuTopic.at(i), "imu0", "accelerometer_noise_density", imu->sigma_a);
+            parser->parse_external(imuTopic.at(i), "imu0", "accelerometer_random_walk", imu->sigma_ab);
+            string str;
+            parser->parse_external(imuTopic.at(i), "imu0", "rostopic", str);
+            imu->SetTopic(str);
+
+            Eigen::Matrix4d T;
+            parser->parse_external(imuTopic.at(i), "imu0", "T_cam_imu", T);
+            imu->SetExtrinsic(T);
+            // parser->parse_external(imuTopic.at(i), "imu0", "T_imu_cam", imu->T_CtoI);
+
+            imu->sigma_w_2 = std::pow(imu->sigma_w, 2);
+            imu->sigma_wb_2 = std::pow(imu->sigma_wb, 2);
+            imu->sigma_a_2 = std::pow(imu->sigma_a, 2);
+            imu->sigma_ab_2 = std::pow(imu->sigma_ab, 2);
             imu_noises.push_back(imu);
             std::cout << "------------------------" << i+1 << "/" << num << "---------------------------" << std::endl;
-            std::cout << "imu  ==  "  << imu << std::endl;
-            imu.print();
+            std::cout << "imu  ==  "  << imuType << std::endl;
+            imu->print();
             std::cout << "------------------------------------------------------" << std::endl;
         }
     }
     
 }
+
+// class ImuIntrics
+// {
+// public:
+//     ImuIntrics(){};
+//     string topic;
+//     ov_msckf::NoiseManager noise;
+//     Eigen::Matrix4d T_CtoI = Eigen::Matrix4d::Identity();
+//     void print() {
+//         std::cout << "ImuIntrics topic: " << topic << std::endl;
+//         noise.print();
+//         std::cout << "T_CtoI: " << std::endl << T_CtoI << std::endl;
+//     }
+// };
+// void load_noise(const std::shared_ptr<cv::FileStorage> config, const std::shared_ptr<ov_core::YamlParser> &parser, std::vector<ImuIntrics> &imu_noises) {
+
+//     int num;
+//     parser->parse_config("imu_num", num); // might be redundant
+//     std::vector<std::string> imuTopic;
+//     for (int i = 0; i < num; i++) {
+//         imuTopic.push_back(std::string("relative_config_imu") + std::to_string(i));
+//         string imu;
+//         config->root()[imuTopic.at(i)]>>imu;
+//         if (parser != nullptr) {
+//             ImuIntrics imu;
+//             parser->parse_external(imuTopic.at(i), "imu0", "rostopic", imu.topic);
+//             parser->parse_external(imuTopic.at(i), "imu0", "gyroscope_noise_density", imu.noise.sigma_w);
+//             parser->parse_external(imuTopic.at(i), "imu0", "gyroscope_random_walk", imu.noise.sigma_wb);
+//             parser->parse_external(imuTopic.at(i), "imu0", "accelerometer_noise_density", imu.noise.sigma_a);
+//             parser->parse_external(imuTopic.at(i), "imu0", "accelerometer_random_walk", imu.noise.sigma_ab);
+//             parser->parse_external(imuTopic.at(i), "imu0", "T_imu_cam", imu.T_CtoI);
+//             imu.noise.sigma_w_2 = std::pow(imu.noise.sigma_w, 2);
+//             imu.noise.sigma_wb_2 = std::pow(imu.noise.sigma_wb, 2);
+//             imu.noise.sigma_a_2 = std::pow(imu.noise.sigma_a, 2);
+//             imu.noise.sigma_ab_2 = std::pow(imu.noise.sigma_ab, 2);
+//             imu_noises.push_back(imu);
+//             std::cout << "------------------------" << i+1 << "/" << num << "---------------------------" << std::endl;
+//             std::cout << "imu  ==  "  << imu << std::endl;
+//             imu.print();
+//             std::cout << "------------------------------------------------------" << std::endl;
+//         }
+//     }
+    
+// }
 
 int main(int argc, char **argv)
 {
@@ -127,7 +205,7 @@ int main(int argc, char **argv)
     std::string verbosity = "DEBUG";
     ov_core::Printer::setPrintLevel(verbosity);
 
-    std::vector<ImuIntrics> imu_noises;
+    std::vector<std::shared_ptr<Noise>> imu_noises;
     load_noise(config, parser, imu_noises);
 
     double gravity_mag = 9.81;
@@ -138,14 +216,15 @@ int main(int argc, char **argv)
         std::exit(EXIT_FAILURE);
     }
 
-    ImuGrabber imuCh0(imu_noises.at(0).topic), imuIcm(imu_noises.at(1).topic);
+    ImuGrabber imuCh0(imu_noises.at(0)->GetTopic());
+    ImuGrabber imuIcm(imu_noises.at(1)->GetTopic());
     ImuSyn igb(&imuCh0, &imuIcm);
 
-    igb.propagator_Ch0 = std::make_shared<Propagator>(imu_noises.at(0).noise, gravity_mag);
-    igb.propagator_Icm = std::make_shared<Propagator>(imu_noises.at(1).noise, gravity_mag);
+    igb.propagator_Ch0 = std::make_shared<Propagator>(*imu_noises.at(0), gravity_mag);
+    igb.propagator_Icm = std::make_shared<Propagator>(*imu_noises.at(1), gravity_mag);
 
-    ros::Subscriber sub_imuCh0 = node_handler.subscribe(imu_noises.at(0).topic, 1000, &ImuGrabber::GrabImu, &imuCh0);
-    ros::Subscriber sub_imuIcm = node_handler.subscribe(imu_noises.at(1).topic, 1000, &ImuGrabber::GrabImu, &imuIcm);
+    ros::Subscriber sub_imuCh0 = node_handler.subscribe(imu_noises.at(0)->GetTopic(), 1000, &ImuGrabber::GrabImu, &imuCh0);
+    ros::Subscriber sub_imuIcm = node_handler.subscribe(imu_noises.at(1)->GetTopic(), 1000, &ImuGrabber::GrabImu, &imuIcm);
 
     // setup_ros_publishers(node_handler, image_transport);
 
@@ -203,8 +282,8 @@ void ImuSyn::SyncWithImu()
             ov_core::ImuData message;
             message.timestamp = mpIcm->imuBuf.front()->header.stamp.toSec();
             message.data = mpIcm->imuBuf.front();
-            propagator_Icm->feed_imu(message, oldest_time);
-            propagator_Ch0->feed_imu(message, oldest_time);
+            // propagator_Icm->feed_imu(message, oldest_time);
+            // propagator_Ch0->feed_imu(message, oldest_time);
 
             
             std::chrono::milliseconds tSleep(1);

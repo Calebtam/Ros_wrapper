@@ -57,6 +57,13 @@ public:
     _noises.sigma_ab_2 = std::pow(_noises.sigma_ab, 2);
     last_prop_time_offset = 0.0;
     _gravity << 0.0, 0.0, gravity_mag;
+
+    printf("  Propagator- gyroscope_noise_density: %.6f\n", _noises.sigma_w);
+    printf("  Propagator- accelerometer_noise_density: %.5f\n", _noises.sigma_a);
+    printf("  Propagator- gyroscope_random_walk: %.7f\n", _noises.sigma_wb);
+    printf("  Propagator- accelerometer_random_walk: %.6f\n", _noises.sigma_ab);
+    printf("  Propagator- gravity_mag: %.6f\n", gravity_mag);
+    std::cout << "------------------------------------------------------" << std::endl;
   }
 
   /**

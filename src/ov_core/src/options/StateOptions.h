@@ -88,7 +88,9 @@ struct StateOptions {
 
   /// Nice print function of what parameters we have loaded
   void print(const std::shared_ptr<ov_core::YamlParser> &parser = nullptr) {
+    PRINT_DEBUG("ESTIMATOR PARAMETERS:\n");
     if (parser != nullptr) {
+      PRINT_DEBUG("ESTIMATOR PARAMETERS:\n");
       parser->parse_config("use_fej", do_fej);
       parser->parse_config("use_imuavg", imu_avg);
       parser->parse_config("use_rk4int", use_rk4_integration);

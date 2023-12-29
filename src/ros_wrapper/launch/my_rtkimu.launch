@@ -1,26 +1,24 @@
 <launch>
     <!-- change the bag -->
-    <!-- <arg name="bag_file" default="/home/tam/DataSet/20231116_CG170_baseball/1116_01_1699345333-fourth.bag"/> -->
-    <arg name="bag_file" default="/home/tam/DataSet/12/green_work_1703572439.bag"/>
+    <arg name="bag_file" default="/home/tam/DataSet/20231116_CG170_baseball/1116_01_1699345333-fourth.bag"/>
+    <!-- <arg name="bag_file" default="/home/tam/DataSet/2023.12.27_CG170_03_baseball_Chaohe_IMU/slam_record_1703659470.bag"/> -->
     <arg name="image_topic" default="/camera/image_sync_ir"/>
     <arg name="uncompressed_topic" default="/camera/image_raw"/>
 
-    <!-- OpenVins -->
-    <node name="wrapper_stereo" pkg="wrapper" type="wrapper_stereo" output="screen">
-        <!-- for EuRoC dataset -->
-        <remap from="/camera/left/image_raw"    to="/cam0/image_raw"/>
-        <remap from="/camera/right/image_raw"   to="/cam1/image_raw"/>
-        <remap from="/imu"                      to="/imu0"/>
+    <!-- <node pkg="split" name="split.py" type="split.py"/> -->
+    <node pkg="wrapper" name="mysplit" type="mysplit.py" output="screen"/>
 
+    <!-- OpenVins -->
+    <node name="wrapper_rtk_inertial" pkg="wrapper" type="wrapper_rtk_inertial" output="screen">
         <!-- Parameters for OpenVins -->
-        <param name="settings_file" type="string"   value="$(find wrapper)/config/cg170_01/estimator_config.yaml" />
+        <param name="settings_file" type="string"   value="$(find wrapper)/config/cg170_03/estimator_config.yaml" />
 
         <!-- Parameters for ROS -->
         <param name="world_frame_id"    type="string"   value="world" />
         <param name="cam_frame_id"      type="string"   value="camera" />
         <param name="enable_pangolin"   type="bool"     value="true" />
     </node>
-
+<!-- _inertial -->
     <!-- Visualization - RViz-->
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find wrapper)/config/orb_slam3_with_imu.rviz" output="screen" />
     
@@ -34,7 +32,12 @@
     </node>
     
     <!-- 注意这里bag文件的路径必须为绝对路径-->
-    <node pkg="rosbag" type="play" name="player"  args="$(arg bag_file)  -s 10" /> 
+    <!-- respawn_delay="10" 在respawn设置为true后可以通过delay延时自动启动节点  -->
+    <node pkg="rosbag" type="play" name="player" args="$(arg bag_file) -s 10" required ="true" respawn_delay="1000"/>
+
     <node pkg="image_transport" type="republish" name="image_republisher" args="compressed in/compressed:=$(arg image_topic) out:=$(arg uncompressed_topic)"/>
+
+    <!-- <node pkg="image_transport" type="republish" name="image_republisher" args="compressed in:=$(arg image_topic) out:=$(arg uncompressed_topic)"/> -->
+    
 
 </launch>

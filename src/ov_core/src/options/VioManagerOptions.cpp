@@ -54,8 +54,8 @@ using namespace ov_msckf;
    * @param parser If not null, this parser will be used to load our parameters
    */
   void VioManagerOptions::print_and_load(const std::shared_ptr<ov_core::YamlParser> &parser) {
-    // print_and_load_estimator(parser);
-    // print_and_load_noise(parser);
+    print_and_load_estimator(parser);
+    print_and_load_noise(parser);
     print_and_load_state(parser);
     print_and_load_trackers(parser);
   }

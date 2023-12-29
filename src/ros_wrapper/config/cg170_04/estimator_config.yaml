@@ -1,6 +1,6 @@
 %YAML:1.0 # need to specify the file type at the top!
 
-verbosity: "DEBUG" # ALL, DEBUG, INFO, WARNING, ERROR, SILENT
+verbosity: "INFO" # ALL, DEBUG, INFO, WARNING, ERROR, SILENT
 
 use_fej: true # if first-estimate Jacobians should be used (enable for good consistency)
 use_imuavg: true # if using discrete integration, if we should average sequential IMU measurements to "smooth" it
@@ -120,14 +120,12 @@ mask1: "rect.png" #relative to current file
 # imu config should also have the correct noise values
 use_accle_gyro: false
 
-imu_num: 1
-relative_config_imu0: "icm40608_imu_chain.yaml"
-relative_config_imu1: "ch0x0.yaml"
-relative_config_imu: "icm40608_imu_chain.yaml"
+# relative_config_imu: "icm40608_imu_chain.yaml"
+relative_config_imu: "ch0x0.yaml"
 #relative_config_imucam: "ov9782_imucam_chain_camera2.yaml"
 relative_config_imucam: "ov9782_imucam_chain_camera3.yaml"
 
-bag_start: 100
+bag_start: 5
 bag_durr: -1
 
 # ==================================================================
@@ -135,27 +133,11 @@ bag_durr: -1
 # ==================================================================
 
 # path_bag for yunye
-# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231103_VL_4floor_Data/green_work_1698965105.bag
-# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231107_vl170_yt_01_19floor_data/green_work_1698394839.bag
-# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231107_vl170_yt_01_19floor_data/green_work_1698394941.bag
-# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231107_vl170_yt_01_4floor_data/green_work_1699320067.bag
-# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231107_vl170_yt_01_4floor_data/1108_record_1699426116.bag
-# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231108_vl170_yt_01_4floor_data/1108_1699404168.bag
-# 80s
-# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231109_vl170_01_BQC_双目/1109_2_1699477787.bag
-# 12s
-# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231109_vl170_01_BQC_双目/1109_2_1699479305.bag
-# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231109_vl170_01_BQC_回环/1109_1699468549_1.bag
-# first 44s; second 1370
-# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231109_vl170_01_BQC_回环/1109_1699468549.bag
-# 45s
-# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231113_vl170_01_BQC_双目/1113_01_1699826593_fifth_4_25_25.bag
-path_bag: /home/tam/DataSet/20231116_CG170_baseball/1116_01_1699345333-fourth.bag
-# path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231116_cg170_01_BQC/1116_01_1699345333-fourth.bag
 
-#path_bag: /home/yunye/Documents/EN2301/20231017_双目定位适配/20231115_cg170_01_3floor/green_work_1700010979.bag
-#path_bag: /home/zyn/dataSetForRovio/CG_bangqiu_11_16/1116_01_1700098154-fifth.bag
-#path_bag: /home/zyn/dataSetForRovio/CG_bangqiu_11_16/1116_01_1700094573-third.bag
+# path_bag: /home/tam/DataSet/20231116_CG170_baseball/1116_01_1699345333-fourth.bag
+# path_bag: /home/tam/DataSet/slam_record_1703660162.bag
+path_bag: /home/tam/DataSet/slam_record_1703763136.bag
+
 rtk_topic: /rtk_fix
 odom_topic: /wheel_odom
 #rtk_topic: /fix
@@ -171,7 +153,7 @@ sigma_rp: [0.1, 0.1]
 sigma_yaw: 1
 
 # fusion type: 0-fuse all, 1-fuse RTK only, 2-fuse VIO only. This is for debug
-fusion_type: 0
+fusion_type: 2
 
 # sensor_frequency
 rtk_frequency: 10

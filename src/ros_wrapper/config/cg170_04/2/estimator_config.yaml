@@ -1,6 +1,6 @@
 %YAML:1.0 # need to specify the file type at the top!
 
-verbosity: "DEBUG" # ALL, DEBUG, INFO, WARNING, ERROR, SILENT
+verbosity: "INFO" # ALL, DEBUG, INFO, WARNING, ERROR, SILENT
 
 use_fej: true # if first-estimate Jacobians should be used (enable for good consistency)
 use_imuavg: true # if using discrete integration, if we should average sequential IMU measurements to "smooth" it
@@ -120,10 +120,9 @@ mask1: "rect.png" #relative to current file
 # imu config should also have the correct noise values
 use_accle_gyro: false
 
-imu_num: 1
+imu_num: 2 
 relative_config_imu0: "icm40608_imu_chain.yaml"
 relative_config_imu1: "ch0x0.yaml"
-relative_config_imu: "icm40608_imu_chain.yaml"
 #relative_config_imucam: "ov9782_imucam_chain_camera2.yaml"
 relative_config_imucam: "ov9782_imucam_chain_camera3.yaml"
 

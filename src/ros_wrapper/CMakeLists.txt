@@ -10,6 +10,8 @@ set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS "-std=c++14")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g")
 
+add_definitions(-DROS_AVAILABLE=1)
+
 find_package (catkin REQUIRED COMPONENTS
    roscpp
    rospy
@@ -49,7 +51,7 @@ include_directories(
 
 include_directories(${CMAKE_SOURCE_DIR}/ov_core/src)
 include_directories(${CMAKE_SOURCE_DIR}/ov_msckf/src)
-
+include_directories(${CMAKE_SOURCE_DIR}/ov_init/src)
 # MESSAGE(STATUS "#### PROJECT_SOURCE_DIR  ${PROJECT_SOURCE_DIR}" )
 
 MESSAGE("include_directories:")
@@ -94,29 +96,49 @@ set(LIBS
 # )
 
 
-# 前端测试 node
-add_executable (${PROJECT_NAME}_stereo
-   src/stereo_node.cc
-   src/later/common.cc
-   ${CMAKE_SOURCE_DIR}/ov_msckf/src/state/State.cpp
-   ${CMAKE_SOURCE_DIR}/ov_core/src/track/TrackBase.cpp
-   ${CMAKE_SOURCE_DIR}/ov_core/src/track/TrackKLT.cpp
-   ${CMAKE_SOURCE_DIR}/ov_core/src/options/VioManagerOptions.cpp
-)
-target_link_libraries(${PROJECT_NAME}_stereo
-   ${LIBS} ov_core_lib
-)
+# # 前端测试 node
+# set(Stereo_  ${PROJECT_NAME}_stereo)
 
-# IMU测试 node
-add_executable (${PROJECT_NAME}_inertial
-   src/inertial_node.cc
+# add_executable (${Stereo_}
+#    src/stereo_node.cc
+#    src/later/common.cc
+#    ${CMAKE_SOURCE_DIR}/ov_msckf/src/state/State.cpp
+#    ${CMAKE_SOURCE_DIR}/ov_core/src/track/TrackBase.cpp
+#    ${CMAKE_SOURCE_DIR}/ov_core/src/track/TrackKLT.cpp
+#    ${CMAKE_SOURCE_DIR}/ov_core/src/options/VioManagerOptions.cpp
+# )
+# target_link_libraries(${Stereo_}
+#    ${LIBS} ov_core_lib
+# )
+
+# # IMU测试 node
+# set(Imu_  ${PROJECT_NAME}_inertial)
+
+# add_executable (${Imu_}
+#    src/inertial_node.cc
+#    src/later/common.cc
+#    ${CMAKE_SOURCE_DIR}/ov_msckf/src/state/State.cpp
+#    ${CMAKE_SOURCE_DIR}/ov_msckf/src/state/Propagator.cpp
+#    ${CMAKE_SOURCE_DIR}/ov_msckf/src/state/StateHelper.cpp
+# )
+# target_link_libraries(${Imu_}
+#    ${LIBS} ov_msckf_lib ov_core_lib
+# )
+
+# IMU Compare Rtk 测试 node
+set(ImuRtk  ${PROJECT_NAME}_rtk_inertial)
+
+add_executable (${ImuRtk}
+   src/inertial_rtk_node.cc
    src/later/common.cc
    ${CMAKE_SOURCE_DIR}/ov_msckf/src/state/State.cpp
    ${CMAKE_SOURCE_DIR}/ov_msckf/src/state/Propagator.cpp
    ${CMAKE_SOURCE_DIR}/ov_msckf/src/state/StateHelper.cpp
+   ${CMAKE_SOURCE_DIR}/ov_init/src/init/InertialInitializer.cpp
+   ${CMAKE_SOURCE_DIR}/ov_init/src/static/StaticInitializer.cpp
 )
-target_link_libraries(${PROJECT_NAME}_inertial
-   ${LIBS} ov_msckf_lib ov_core_lib
+target_link_libraries(${ImuRtk}
+   ${LIBS} ov_msckf_lib ov_core_lib ov_init_lib
 )
 
 # # RGB-D node

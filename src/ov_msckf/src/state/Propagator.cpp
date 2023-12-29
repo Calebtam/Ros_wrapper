@@ -61,12 +61,17 @@ void Propagator::propagate_and_clone(std::shared_ptr<State> state, double timest
   // First lets construct an IMU vector of measurements we need
   double time0 = state->_timestamp + last_prop_time_offset;
   double time1 = timestamp + t_off_new;
+
+  std::cout << GREEN << "Propagator::propagate_and_clone(): Propagating from " << time0 << " to " << time1
+              << " (dt = " << (time1 - time0) << ")" << RESET << std::endl;
+
   printf(RED "STEP 1: " RESET);
   std::vector<ov_core::ImuData> prop_data;
   {
     std::lock_guard<std::mutex> lck(imu_data_mtx);
     prop_data = Propagator::select_imu_readings(imu_data, time0, time1);
   }
+  if(prop_data.empty()) return;
 
   const Eigen::Matrix<double, 15, 15> MatZero15 = Eigen::Matrix<double, 15, 15>::Zero();
   // We are going to sum up all the state transition matrices, so we can do a single large multiplication at the end
